@@ -1,28 +1,52 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>詳細</title>
+    <title>記録詳細</title>
+    <style>
+        .comment { margin-left: 20px; border-left: 2px solid #ccc; padding-left: 10px; }
+        .reply-form { margin-left: 20px; }
+    </style>
 </head>
 <body>
-    <h1>授業記録詳細</h1>
-    <p><strong>日付：</strong> {{ record[1] }}</p>
-    <p><strong>授業内容：</strong> {{ record[2] }}</p>
-    <p><strong>宿題：</strong> {{ record[3] }}</p>
-    <p><strong>次回予定：</strong> {{ record[4] }}</p>
+    <h1>記録詳細</h1>
+    <p><strong>日付:</strong> {{ record[1] }}</p>
+    <p><strong>授業内容:</strong> {{ record[2] }}</p>
+    <p><strong>宿題:</strong> {{ record[3] }}</p>
+    <p><strong>次回予定:</strong> {{ record[4] }}</p>
 
-    <h2>💬 コメント</h2>
-    <ul>
-        {% for c in comments %}
-        <li><strong>{{ c[2] }}:</strong> {{ c[3] }}（{{ c[4] }}）</li>
-        {% endfor %}
-    </ul>
+    <hr>
+    <h2>コメント一覧</h2>
 
+    {% macro render_comment(comment) %}
+        <div class="comment">
+            <p><strong>{{ comment.author }}</strong>: {{ comment.comment }}</p>
+
+            <form class="reply-form" method="post">
+                <input type="hidden" name="parent_id" value="{{ comment.id }}">
+                <input type="text" name="author" placeholder="あなたの名前" required>
+                <input type="text" name="comment" placeholder="返信内容" required>
+                <button type="submit">返信</button>
+            </form>
+
+            {% for child in comment.children %}
+                {{ render_comment(child) }}
+            {% endfor %}
+        </div>
+    {% endmacro %}
+
+    {% for comment in comments %}
+        {{ render_comment(comment) }}
+    {% endfor %}
+
+    <hr>
+    <h2>新しいコメント</h2>
     <form method="post">
-        名前: <input name="author" required><br>
-        コメント: <textarea name="comment" required></textarea><br>
-        <button type="submit">送信</button>
+        <input type="hidden" name="parent_id" value="">
+        <input type="text" name="author" placeholder="あなたの名前" required>
+        <input type="text" name="comment" placeholder="コメント内容" required>
+        <button type="submit">投稿</button>
     </form>
 
-    <p><a href="{{ url_for('index') }}">← 一覧に戻る</a></p>
+    <p><a href="/">← 一覧に戻る</a></p>
 </body>
 </html>
