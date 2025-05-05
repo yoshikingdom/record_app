@@ -3,15 +3,26 @@
 {% block title %}ログイン{% endblock %}
 
 {% block content %}
-<h1>ログイン</h1>
-
-{% if error %}
-    <p style="color:red;">{{ error }}</p>
-{% endif %}
-
-<form method="POST">
-    <label>ユーザー名: <input type="text" name="username" required></label><br><br>
-    <label>パスワード: <input type="password" name="password" required></label><br><br>
-    <button type="submit">ログイン</button>
-</form>
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card shadow-sm mt-5">
+      <div class="card-body">
+        <h2 class="card-title mb-4 text-center">🔐 ログイン</h2>
+        <form method="POST">
+          <div class="mb-3">
+            <label class="form-label">ユーザー名</label>
+            <input type="text" name="username" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">パスワード</label>
+            <input type="password" name="password" class="form-control" required>
+          </div>
+          <div class="d-grid">
+            <button type="submit" class="btn btn-primary">ログイン</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

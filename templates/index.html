@@ -3,10 +3,24 @@
 {% block title %}授業記録一覧{% endblock %}
 
 {% block content %}
-<h1>授業記録一覧</h1>
-<ul>
+<h1 class="mb-4">📚 授業記録一覧</h1>
+
+<div class="row row-cols-1 row-cols-md-2 g-4">
   {% for record in records %}
-    <li><a href="{{ url_for('record_detail', record_id=record[0]) }}">{{ record[1] }}</a></li>
+    <div class="col">
+      <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body">
+          <h5 class="card-title">📝 {{ record[2] }}</h5>
+          <p class="card-text">
+            <span class="text-muted">📅 {{ record[1] }}</span>
+          </p>
+          {% if current_user.role == 'teacher' %}
+            <p class="card-text text-muted">👤 生徒: {{ record[-1] }}</p>
+          {% endif %}
+          <a href="{{ url_for('record_detail', record_id=record[0]) }}" class="btn btn-success btn-sm">詳細を見る</a>
+        </div>
+      </div>
+    </div>
   {% endfor %}
-</ul>
+</div>
 {% endblock %}

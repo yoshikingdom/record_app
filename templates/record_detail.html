@@ -3,37 +3,62 @@
 {% block title %}授業記録詳細{% endblock %}
 
 {% block content %}
-<h1>{{ record[1] }} の記録</h1>
-<p><strong>内容:</strong> {{ record[2] }}</p>
-<p><strong>宿題:</strong> {{ record[3] }}</p>
-<p><strong>次回予定:</strong> {{ record[4] }}</p>
+<h1 class="mb-4">📘 授業記録の詳細</h1>
+
+<div class="card mb-4 shadow-sm">
+  <div class="card-body">
+    <h5 class="card-title">{{ record[2] }}</h5>
+    <p class="card-text"><strong>📅 日付:</strong> {{ record[1] }}</p>
+    <p class="card-text"><strong>📖 授業内容:</strong><br>{{ record[3] }}</p>
+    <p class="card-text"><strong>📚 宿題:</strong><br>{{ record[4] }}</p>
+    <p class="card-text"><strong>🎯 次回予定:</strong><br>{{ record[5] }}</p>
+  </div>
+</div>
 
 <hr>
-<h2>コメント</h2>
-<form method="POST">
-    <textarea name="comment" required></textarea>
+<h2 class="mt-4">💬 コメント</h2>
+
+<form method="POST" class="mb-4">
+  <div class="mb-3">
+    <label class="form-label">コメントを追加</label>
+    <textarea name="comment" class="form-control" required></textarea>
     <input type="hidden" name="parent_id" value="">
-    <button type="submit">コメントする</button>
+  </div>
+  <button type="submit" class="btn btn-primary">投稿</button>
 </form>
 
-{% macro render_comment(comment) %}
-    <div style="margin-left: 20px; border-left: 1px solid #ccc; padding-left: 10px; margin-top: 10px;">
-        <p><strong>{{ comment.author }}</strong>: {{ comment.comment }}</p>
-        <small>{{ comment.created_at }}</small>
-        {% if current_user.role == 'teacher' %}
-        <form method="POST" style="margin-top: 5px;">
-            <input type="hidden" name="parent_id" value="{{ comment.id }}">
-            <textarea name="comment" placeholder="返信..." required></textarea>
-            <button type="submit">返信</button>
-        </form>
-        {% endif %}
-        {% for child in comment.children %}
-            {{ render_comment(child) }}
-        {% endfor %}
-    </div>
+{% macro render_comment(comment, level=0) %}
+<div class="card mb-2 ms-{{ level * 2 }} shadow-sm">
+  <div class="card-body">
+    {% if comment.comment == '[削除済み]' %}
+      <p class="text-muted fst-italic">[削除済みのコメント]</p>
+    {% else %}
+      <p><strong>{{ comment.author }}</strong>: {{ comment.comment }}</p>
+    {% endif %}
+    <small class="text-muted">{{ comment.created_at }}</small>
+
+    {% if comment.comment != '[削除済み]' and (current_user.role == 'teacher' or current_user.username == comment.author) %}
+    <form method="POST" action="{{ url_for('delete_comment', comment_id=comment.id) }}" class="d-inline-block mt-2">
+      <button type="submit" class="btn btn-sm btn-outline-danger">🗑️ 削除</button>
+    </form>
+    {% endif %}
+
+    {% if comment.comment != '[削除済み]' %}
+    <form method="POST" class="mt-2">
+      <input type="hidden" name="parent_id" value="{{ comment.id }}">
+      <textarea name="comment" class="form-control mb-2" placeholder="返信..." required></textarea>
+      <button type="submit" class="btn btn-sm btn-secondary">返信</button>
+    </form>
+    {% endif %}
+
+    {% for child in comment.children %}
+      {{ render_comment(child, level + 1) }}
+    {% endfor %}
+  </div>
+</div>
 {% endmacro %}
 
 {% for comment in comments %}
-    {{ render_comment(comment) }}
+  {{ render_comment(comment) }}
 {% endfor %}
 {% endblock %}

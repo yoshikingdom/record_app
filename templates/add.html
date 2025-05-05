@@ -1,14 +1,38 @@
-{% extends "layout.html" %}
-
-{% block title %}記録追加{% endblock %}
-
-{% block content %}
-<h1>授業記録を追加</h1>
-<form method="POST">
-    <label>日付: <input type="date" name="date" required></label><br><br>
-    <label>授業内容: <textarea name="content" required></textarea></label><br><br>
-    <label>宿題: <textarea name="homework"></textarea></label><br><br>
-    <label>次回予定: <textarea name="next_plan"></textarea></label><br><br>
-    <button type="submit">追加</button>
-</form>
-{% endblock %}
+<form method="POST" class="mb-4">
+    <div class="mb-3">
+      <label class="form-label">日付</label>
+      <input type="date" name="date" class="form-control" required>
+    </div>
+  
+    <div class="mb-3">
+      <label class="form-label">タイトル</label>
+      <input type="text" name="title" class="form-control" required>
+    </div>
+  
+    <div class="mb-3">
+      <label class="form-label">授業内容</label>
+      <textarea name="content" class="form-control" required></textarea>
+    </div>
+  
+    <div class="mb-3">
+      <label class="form-label">宿題</label>
+      <textarea name="homework" class="form-control"></textarea>
+    </div>
+  
+    <div class="mb-3">
+      <label class="form-label">次回予定</label>
+      <textarea name="next_plan" class="form-control"></textarea>
+    </div>
+  
+    <div class="mb-3">
+      <label class="form-label">対象生徒</label>
+      <select name="student_id" class="form-select" required>
+        {% for student in students %}
+          <option value="{{ student[0] }}">{{ student[1] }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  
+    <button type="submit" class="btn btn-primary">追加</button>
+  </form>
+  

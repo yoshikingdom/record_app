@@ -1,3 +1,4 @@
+from flask import make_response
 from flask import Flask, render_template, request, redirect, url_for
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 import sqlite3
@@ -122,31 +123,85 @@ def logout():
 def index():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("SELECT * FROM records ORDER BY date DESC")
+
+    if current_user.role == "teacher":
+        # 講師はすべての記録を見られる
+        c.execute("""
+            SELECT records.*, users.username 
+            FROM records 
+            LEFT JOIN users ON records.student_id = users.id 
+            ORDER BY date DESC
+        """)
+    else:
+        # 生徒は自分の記録だけ
+        c.execute("""
+            SELECT records.*, users.username 
+            FROM records 
+            LEFT JOIN users ON records.student_id = users.id 
+            WHERE student_id = ? 
+            ORDER BY date DESC
+        """, (current_user.id,))
+
     records = c.fetchall()
     conn.close()
-    return render_template("index.html", records=records, user=current_user)
+    return render_template("index.html", records=records)
+
 
 @app.route("/add", methods=["GET", "POST"])
 @login_required
 def add_record():
     if current_user.role != "teacher":
-        return "このページは講師専用です", 403  # アクセス禁止
+        return "このページは講師専用です", 403
+
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
 
     if request.method == "POST":
         date = request.form["date"]
+        title = request.form["title"]
         content = request.form["content"]
         homework = request.form["homework"]
         next_plan = request.form["next_plan"]
-        conn = sqlite3.connect(DB_NAME)
-        c = conn.cursor()
-        c.execute("INSERT INTO records (date, content, homework, next_plan) VALUES (?, ?, ?, ?)",
-                  (date, content, homework, next_plan))
+        student_id = request.form["student_id"]
+
+        c.execute("INSERT INTO records (date, title, content, homework, next_plan, student_id) VALUES (?, ?, ?, ?, ?, ?)",
+          (date, title, content, homework, next_plan, student_id))
+
         conn.commit()
         conn.close()
         return redirect(url_for("index"))
 
-    return render_template("add.html")
+    # ✅ 生徒一覧を取得してフォームに渡す
+    c.execute("SELECT id, username FROM users WHERE role = 'student'")
+    students = c.fetchall()
+    conn.close()
+    return render_template("add.html", students=students)
+
+@app.route("/delete_comment/<int:comment_id>", methods=["POST"])
+@login_required
+def delete_comment(comment_id):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+
+    c.execute("SELECT author, record_id FROM comments WHERE id = ?", (comment_id,))
+    result = c.fetchone()
+    if not result:
+        conn.close()
+        return "コメントが見つかりません", 404
+
+    author, record_id = result
+
+    # 講師 or 投稿者本人のみ削除可
+    if current_user.role != "teacher" and current_user.username != author:
+        conn.close()
+        return "削除権限がありません", 403
+
+    # 論理削除（内容だけ変更）
+    c.execute("UPDATE comments SET comment = '[削除済み]' WHERE id = ?", (comment_id,))
+
+    conn.commit()
+    conn.close()
+    return redirect(url_for("record_detail", record_id=record_id))
 
 
 @app.route("/record/<int:record_id>", methods=["GET", "POST"])
@@ -192,6 +247,14 @@ def settings():
             logout_user()
         conn.close()
     return render_template("settings.html", user=current_user, message=message)
+
+@app.route("/set_theme", methods=["POST"])
+def set_theme():
+    theme = request.form["theme"]
+    resp = make_response(redirect(request.referrer or url_for("index")))
+    resp.set_cookie("theme", theme, max_age=60*60*24*30)  # 30日間有効
+    return resp
+
 
 if __name__ == "__main__":
     app.run(debug=True)
