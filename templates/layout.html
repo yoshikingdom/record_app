@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}授業記録アプリ{% endblock %}</title>
+</head>
+<body>
+    <div style="background:#f0f0f0; padding:10px;">
+        {% if current_user.is_authenticated %}
+            ようこそ {{ current_user.username }} さん（{{ current_user.role }}） |
+            <a href="{{ url_for('index') }}">ホーム</a> |
+            <a href="{{ url_for('add_record') }}">記録追加</a> |
+            <a href="{{ url_for('settings') }}">設定</a> |
+            <a href="{{ url_for('logout') }}">ログアウト</a>
+        {% else %}
+            <a href="{{ url_for('login') }}">ログイン</a>
+        {% endif %}
+    </div>
+
+    <div style="padding: 20px;">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

@@ -1,25 +1,14 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>記録追加</title>
-</head>
-<body>
-    <h1>授業記録を追加</h1>
-    <form method="post">
-        <label>日付:</label><br>
-        <input type="date" name="date" required><br><br>
+{% extends "layout.html" %}
 
-        <label>授業内容:</label><br>
-        <textarea name="content" required></textarea><br><br>
+{% block title %}記録追加{% endblock %}
 
-        <label>宿題:</label><br>
-        <textarea name="homework"></textarea><br><br>
-
-        <label>次回予定:</label><br>
-        <textarea name="next_plan"></textarea><br><br>
-
-        <button type="submit">保存</button>
-    </form>
-    <p><a href="/">← 一覧に戻る</a></p>
-</body>
-</html>
+{% block content %}
+<h1>授業記録を追加</h1>
+<form method="POST">
+    <label>日付: <input type="date" name="date" required></label><br><br>
+    <label>授業内容: <textarea name="content" required></textarea></label><br><br>
+    <label>宿題: <textarea name="homework"></textarea></label><br><br>
+    <label>次回予定: <textarea name="next_plan"></textarea></label><br><br>
+    <button type="submit">追加</button>
+</form>
+{% endblock %}

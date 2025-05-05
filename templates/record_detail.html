@@ -1,52 +1,39 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>記録詳細</title>
-    <style>
-        .comment { margin-left: 20px; border-left: 2px solid #ccc; padding-left: 10px; }
-        .reply-form { margin-left: 20px; }
-    </style>
-</head>
-<body>
-    <h1>記録詳細</h1>
-    <p><strong>日付:</strong> {{ record[1] }}</p>
-    <p><strong>授業内容:</strong> {{ record[2] }}</p>
-    <p><strong>宿題:</strong> {{ record[3] }}</p>
-    <p><strong>次回予定:</strong> {{ record[4] }}</p>
+{% extends "layout.html" %}
 
-    <hr>
-    <h2>コメント一覧</h2>
+{% block title %}授業記録詳細{% endblock %}
 
-    {% macro render_comment(comment) %}
-        <div class="comment">
-            <p><strong>{{ comment.author }}</strong>: {{ comment.comment }}</p>
+{% block content %}
+<h1>{{ record[1] }} の記録</h1>
+<p><strong>内容:</strong> {{ record[2] }}</p>
+<p><strong>宿題:</strong> {{ record[3] }}</p>
+<p><strong>次回予定:</strong> {{ record[4] }}</p>
 
-            <form class="reply-form" method="post">
-                <input type="hidden" name="parent_id" value="{{ comment.id }}">
-                <input type="text" name="author" placeholder="あなたの名前" required>
-                <input type="text" name="comment" placeholder="返信内容" required>
-                <button type="submit">返信</button>
-            </form>
+<hr>
+<h2>コメント</h2>
+<form method="POST">
+    <textarea name="comment" required></textarea>
+    <input type="hidden" name="parent_id" value="">
+    <button type="submit">コメントする</button>
+</form>
 
-            {% for child in comment.children %}
-                {{ render_comment(child) }}
-            {% endfor %}
-        </div>
-    {% endmacro %}
+{% macro render_comment(comment) %}
+    <div style="margin-left: 20px; border-left: 1px solid #ccc; padding-left: 10px; margin-top: 10px;">
+        <p><strong>{{ comment.author }}</strong>: {{ comment.comment }}</p>
+        <small>{{ comment.created_at }}</small>
+        {% if current_user.role == 'teacher' %}
+        <form method="POST" style="margin-top: 5px;">
+            <input type="hidden" name="parent_id" value="{{ comment.id }}">
+            <textarea name="comment" placeholder="返信..." required></textarea>
+            <button type="submit">返信</button>
+        </form>
+        {% endif %}
+        {% for child in comment.children %}
+            {{ render_comment(child) }}
+        {% endfor %}
+    </div>
+{% endmacro %}
 
-    {% for comment in comments %}
-        {{ render_comment(comment) }}
-    {% endfor %}
-
-    <hr>
-    <h2>新しいコメント</h2>
-    <form method="post">
-        <input type="hidden" name="parent_id" value="">
-        <input type="text" name="author" placeholder="あなたの名前" required>
-        <input type="text" name="comment" placeholder="コメント内容" required>
-        <button type="submit">投稿</button>
-    </form>
-
-    <p><a href="/">← 一覧に戻る</a></p>
-</body>
-</html>
+{% for comment in comments %}
+    {{ render_comment(comment) }}
+{% endfor %}
+{% endblock %}

@@ -1,19 +1,12 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>授業記録一覧</title>
-</head>
-<body>
-    <h1>授業記録一覧</h1>
-    <a href="{{ url_for('add_record') }}">＋ 新しい記録を追加</a>
-    <ul>
-        {% for r in records %}
-        <li>
-            <a href="{{ url_for('record_detail', record_id=r[0]) }}">
-                {{ r[1] }} - {{ r[2][:30] }}...
-            </a>
-        </li>
-        {% endfor %}
-    </ul>
-</body>
-</html>
+{% extends "layout.html" %}
+
+{% block title %}授業記録一覧{% endblock %}
+
+{% block content %}
+<h1>授業記録一覧</h1>
+<ul>
+  {% for record in records %}
+    <li><a href="{{ url_for('record_detail', record_id=record[0]) }}">{{ record[1] }}</a></li>
+  {% endfor %}
+</ul>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+
+{% block title %}ログイン{% endblock %}
+
+{% block content %}
+<h1>ログイン</h1>
+
+{% if error %}
+    <p style="color:red;">{{ error }}</p>
+{% endif %}
+
+<form method="POST">
+    <label>ユーザー名: <input type="text" name="username" required></label><br><br>
+    <label>パスワード: <input type="password" name="password" required></label><br><br>
+    <button type="submit">ログイン</button>
+</form>
+{% endblock %}
