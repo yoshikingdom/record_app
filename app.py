@@ -1,3 +1,4 @@
+from flask import flash
 from flask import make_response
 from flask import Flask, render_template, request, redirect, url_for
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
@@ -94,6 +95,8 @@ def get_comments_tree(record_id):
     return root_comments
 
 
+from flask import flash
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -104,13 +107,18 @@ def login():
         c.execute("SELECT id, username, password, role FROM users WHERE username = ?", (username,))
         user_data = c.fetchone()
         conn.close()
+
         if user_data and password == user_data[2]:
             user = User(user_data[0], user_data[1], user_data[3])
             login_user(user)
+            flash("✅ ログインに成功しました！")
             return redirect(url_for("index"))
         else:
-            return render_template("login.html", error="ログイン失敗")
+            flash("❌ ログインに失敗しました。ユーザー名またはパスワードが間違っています。")
+            return redirect(url_for("login"))
+
     return render_template("login.html")
+
 
 @app.route("/logout")
 @login_required
@@ -167,6 +175,8 @@ def add_record():
         c.execute("INSERT INTO records (date, title, content, homework, next_plan, student_id) VALUES (?, ?, ?, ?, ?, ?)",
           (date, title, content, homework, next_plan, student_id))
 
+        flash("✅ 授業記録を追加しました！", "success")
+
         conn.commit()
         conn.close()
         return redirect(url_for("index"))
@@ -218,7 +228,9 @@ def record_detail(record_id):
                   (record_id, author, comment, datetime.now().isoformat(), parent_id))
         conn.commit()
         conn.close()
+        flash("💬 コメントを投稿しました！", "success")  # ← ✅ 追加
         return redirect(url_for("record_detail", record_id=record_id))
+
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("SELECT * FROM records WHERE id = ?", (record_id,))
@@ -227,10 +239,11 @@ def record_detail(record_id):
     comments = get_comments_tree(record_id)
     return render_template("record_detail.html", record=record, comments=comments, user=current_user)
 
+from flask import flash
+
 @app.route("/settings", methods=["GET", "POST"])
 @login_required
 def settings():
-    message = None
     if request.method == "POST":
         new_username = request.form["username"]
         new_password = request.form["password"]
@@ -238,15 +251,65 @@ def settings():
         c = conn.cursor()
         c.execute("SELECT id FROM users WHERE username = ? AND id != ?", (new_username, current_user.id))
         if c.fetchone():
-            message = "‼ そのユーザー名は既に使われています"
+            flash("❗そのユーザー名は既に使われています", "danger")
         else:
             c.execute("UPDATE users SET username = ?, password = ? WHERE id = ?",
                       (new_username, new_password, current_user.id))
             conn.commit()
-            message = "✅ 情報を更新しました (再ログインが必要です)"
+            conn.close()
+            flash("✅ 情報を更新しました。再ログインしてください。", "success")
             logout_user()
+            return redirect(url_for("login"))
         conn.close()
-    return render_template("settings.html", user=current_user, message=message)
+    
+    return render_template("settings.html", user=current_user)
+
+@app.route("/edit/<int:record_id>", methods=["GET", "POST"])
+@login_required
+def edit_record(record_id):
+    if current_user.role != "teacher":
+        return "このページは講師専用です", 403
+
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+
+    if request.method == "POST":
+        date = request.form["date"]
+        title = request.form["title"]
+        content = request.form["content"]
+        homework = request.form["homework"]
+        next_plan = request.form["next_plan"]
+
+        c.execute("""
+            UPDATE records
+            SET date = ?, title = ?, content = ?, homework = ?, next_plan = ?
+            WHERE id = ?
+        """, (date, title, content, homework, next_plan, record_id))
+        flash("✅ 編集が完了しました！")
+        conn.commit()
+        conn.close()
+        return redirect(url_for("record_detail", record_id=record_id))
+
+    # GET: 記録を取得
+    c.execute("SELECT * FROM records WHERE id = ?", (record_id,))
+    record = c.fetchone()
+
+    # 🔒 記録が見つからない場合
+    if record is None:
+        conn.close()
+        return "記録が見つかりませんでした", 404
+
+    # 生徒の名前を取得
+    student_id = record[6]
+    c.execute("SELECT username FROM users WHERE id = ?", (student_id,))
+    student = c.fetchone()
+    student_name = student[0] if student else "不明"
+
+    conn.close()
+    return render_template("edit.html", record=record, student_name=student_name)
+
+
+
 
 @app.route("/set_theme", methods=["POST"])
 def set_theme():

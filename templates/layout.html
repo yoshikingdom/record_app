@@ -43,8 +43,41 @@
   </div>
 
   <div class="container mt-4">
+         <!-- ✅ フラッシュメッセージ表示 -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+         {% if messages %}
+           {% for category, message in messages %}
+             <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+               {{ message }}
+               <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="閉じる"></button>
+             </div>
+           {% endfor %}
+         {% endif %}
+       {% endwith %}
+       
+       
+
     {% block content %}{% endblock %}
   </div>
-
+  
+  <script>
+    // ページ読み込み後に自動で実行
+    window.addEventListener("DOMContentLoaded", () => {
+      const alerts = document.querySelectorAll(".alert");
+  
+      alerts.forEach(alert => {
+        // 3秒後にフェードアウト開始
+        setTimeout(() => {
+          alert.classList.remove("show"); // Bootstrapのfade効果をトリガー
+          alert.classList.add("fade");
+  
+          // さらに0.5秒後に完全に非表示に
+          setTimeout(() => {
+            alert.remove();
+          }, 500);
+        }, 3000); // ← ✅ 3秒
+      });
+    });
+  </script>
 </body>
 </html>

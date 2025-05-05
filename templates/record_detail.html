@@ -51,6 +51,7 @@
     </form>
     {% endif %}
 
+
     {% for child in comment.children %}
       {{ render_comment(child, level + 1) }}
     {% endfor %}
@@ -61,4 +62,9 @@
 {% for comment in comments %}
   {{ render_comment(comment) }}
 {% endfor %}
+
+{% if current_user.role == 'teacher' %}
+<a href="{{ url_for('edit_record', record_id=record[0]) }}" class="btn btn-warning mt-3">✏️ 編集</a>
+  {% endif %}
+  
 {% endblock %}

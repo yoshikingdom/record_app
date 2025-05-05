@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+{% block title %}記録を編集{% endblock %}
+
+{% block content %}
+<h1>記録を編集</h1>
+<form method="POST">
+  <div class="mb-3">
+    <label>日付</label>
+    <input type="date" name="date" value="{{ record[1] }}" class="form-control" required>
+  </div>
+
+  <div class="mb-3">
+    <label>タイトル</label>
+    <input type="text" name="title" value="{{ record[2] }}" class="form-control" required>
+  </div>
+
+  <div class="mb-3">
+    <label>授業内容</label>
+    <textarea name="content" class="form-control" required>{{ record[3] }}</textarea>
+  </div>
+
+  <div class="mb-3">
+    <label>宿題</label>
+    <textarea name="homework" class="form-control">{{ record[4] }}</textarea>
+  </div>
+
+  <div class="mb-3">
+    <label>次回予定</label>
+    <textarea name="next_plan" class="form-control">{{ record[5] }}</textarea>
+  </div>
+
+  <!-- ✅ 対象生徒（表示のみ・編集不可） -->
+  <div class="mb-3">
+    <label>対象生徒</label>
+    <input type="text" class="form-control" value="{{ student_name }}" disabled>
+  </div>
+
+  <button type="submit" class="btn btn-primary">更新する</button>
+</form>
+{% endblock %}
