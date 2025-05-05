@@ -11,6 +11,8 @@ app.secret_key = "super_secret_key"
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
+login_manager.login_message = None  # ✅ 自動メッセージを無効化
+
 
 DB_NAME = "database.db"
 
