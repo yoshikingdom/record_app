@@ -12,6 +12,7 @@
     <p class="card-text"><strong>📖 授業内容:</strong><br>{{ record[3] }}</p>
     <p class="card-text"><strong>📚 宿題:</strong><br>{{ record[4] }}</p>
     <p class="card-text"><strong>🎯 次回予定:</strong><br>{{ record[5] }}</p>
+    <p class="text-muted"><strong>🕒 登録日時:</strong> {{ record[7][:16].replace('T', ' ') }}</p>
   </div>
 </div>
 
@@ -64,7 +65,13 @@
 {% endfor %}
 
 {% if current_user.role == 'teacher' %}
-<a href="{{ url_for('edit_record', record_id=record[0]) }}" class="btn btn-warning mt-3">✏️ 編集</a>
-  {% endif %}
+<div class="mt-3 d-flex gap-2">
+  <a href="{{ url_for('edit_record', record_id=record[0]) }}" class="btn btn-warning">✏️ 編集</a>
+  <form method="POST" action="{{ url_for('delete_record', record_id=record[0]) }}" onsubmit="return confirm('本当に削除しますか？');">
+    <button type="submit" class="btn btn-danger">🗑️ 削除</button>
+  </form>
+</div>
+{% endif %}
+
   
 {% endblock %}

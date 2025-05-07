@@ -15,7 +15,6 @@ login_manager.login_message = None  # ✅ 自動メッセージを無効化
 
 
 DB_NAME = "database.db"
-
 # ユーザー初期化
 
 def init_users():
@@ -131,30 +130,52 @@ def logout():
 @app.route("/")
 @login_required
 def index():
+    query = request.args.get("q", "").strip()
+    
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
 
     if current_user.role == "teacher":
-        # 講師はすべての記録を見られる
-        c.execute("""
-            SELECT records.*, users.username 
-            FROM records 
-            LEFT JOIN users ON records.student_id = users.id 
-            ORDER BY date DESC
-        """)
+        if query:
+            c.execute("""
+                SELECT records.*, users.username 
+                FROM records 
+                LEFT JOIN users ON records.student_id = users.id 
+                WHERE records.title LIKE ? 
+                    OR records.content LIKE ? 
+                    OR records.date LIKE ? 
+                    OR users.username LIKE ?
+                ORDER BY date DESC
+            """, (f"%{query}%", f"%{query}%", f"%{query}%", f"%{query}%"))
+        else:
+            c.execute("""
+                SELECT records.*, users.username 
+                FROM records 
+                LEFT JOIN users ON records.student_id = users.id 
+                ORDER BY date DESC
+            """)
     else:
-        # 生徒は自分の記録だけ
-        c.execute("""
-            SELECT records.*, users.username 
-            FROM records 
-            LEFT JOIN users ON records.student_id = users.id 
-            WHERE student_id = ? 
-            ORDER BY date DESC
-        """, (current_user.id,))
+        if query:
+            c.execute("""
+                SELECT records.*, users.username 
+                FROM records 
+                LEFT JOIN users ON records.student_id = users.id 
+                WHERE student_id = ? AND (records.title LIKE ? OR records.content LIKE ? OR records.date LIKE ?)
+                ORDER BY date DESC
+            """, (current_user.id, f"%{query}%", f"%{query}%", f"%{query}%"))
+        else:
+            c.execute("""
+                SELECT records.*, users.username 
+                FROM records 
+                LEFT JOIN users ON records.student_id = users.id 
+                WHERE student_id = ? 
+                ORDER BY date DESC
+            """, (current_user.id,))
 
     records = c.fetchall()
     conn.close()
     return render_template("index.html", records=records)
+
 
 
 @app.route("/add", methods=["GET", "POST"])
@@ -173,21 +194,38 @@ def add_record():
         homework = request.form["homework"]
         next_plan = request.form["next_plan"]
         student_id = request.form["student_id"]
+        created_at = datetime.now().isoformat()
 
-        c.execute("INSERT INTO records (date, title, content, homework, next_plan, student_id) VALUES (?, ?, ?, ?, ?, ?)",
-          (date, title, content, homework, next_plan, student_id))
-
-        flash("✅ 授業記録を追加しました！", "success")
+        c.execute("""INSERT INTO records 
+            (date, title, content, homework, next_plan, student_id, created_at) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            (date, title, content, homework, next_plan, student_id, created_at))
 
         conn.commit()
         conn.close()
+        flash("✅ 授業記録を追加しました！")
         return redirect(url_for("index"))
 
-    # ✅ 生徒一覧を取得してフォームに渡す
     c.execute("SELECT id, username FROM users WHERE role = 'student'")
     students = c.fetchall()
     conn.close()
     return render_template("add.html", students=students)
+
+@app.route("/delete/<int:record_id>", methods=["POST"])
+@login_required
+def delete_record(record_id):
+    if current_user.role != "teacher":
+        return "このページは講師専用です", 403
+
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("DELETE FROM records WHERE id = ?", (record_id,))
+    conn.commit()
+    conn.close()
+    flash("🗑️ 記録を削除しました")
+    return redirect(url_for("index"))
+
+
 
 @app.route("/delete_comment/<int:comment_id>", methods=["POST"])
 @login_required

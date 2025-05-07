@@ -5,6 +5,21 @@
 {% block content %}
 <h1 class="mb-4">📚 授業記録一覧</h1>
 
+<form method="GET" action="{{ url_for('index') }}" class="mb-4 d-flex" style="max-width: 500px;">
+  <input type="text" name="q" class="form-control me-2" placeholder="キーワードで検索" value="{{ request.args.get('q', '') }}">
+  <button type="submit" class="btn btn-primary d-flex align-items-center px-3">
+    <span class="me-2">🔍</span>
+    <span>検</span>
+    <span>索</span>
+  </button>
+  
+</form>
+
+
+{% if not records %}
+<p class="text-muted text-center">🔍 検索結果が見つかりませんでした。</p>
+{% endif %}
+
 <div class="row row-cols-1 row-cols-md-2 g-4">
   {% for record in records %}
     <div class="col">
@@ -12,8 +27,10 @@
         <div class="card-body">
           <h5 class="card-title">📝 {{ record[2] }}</h5>
           <p class="card-text">
-            <span class="text-muted">📅 {{ record[1] }}</span>
+            <span class="text-muted">📅 {{ record[1] }}</span><br>
+            <span class="text-muted">🕒 登録: {{ record[7][:16].replace('T', ' ') }}</span>
           </p>
+          
           {% if current_user.role == 'teacher' %}
             <p class="card-text text-muted">👤 生徒: {{ record[-1] }}</p>
           {% endif %}
