@@ -1,4 +1,5 @@
 import sqlite3
+from werkzeug.security import generate_password_hash  # ← 追加
 
 conn = sqlite3.connect("database.db")
 c = conn.cursor()
@@ -14,14 +15,15 @@ c.execute("""
     )
 """)
 
-# サンプルユーザー登録（講師＋生徒2名）
-c.executemany("INSERT INTO users (username, password, role) VALUES (?, ?, ?)", [
-    ("teacher1", "pass123", "teacher"),
-    ("student1", "pass456", "student"),
-    ("student2", "pass789", "student")
-])
+# ✅ ハッシュ化したパスワードで登録
+users = [
+    ("teacher1", generate_password_hash("pass123"), "teacher"),
+    ("student1", generate_password_hash("pass456"), "student"),
+    ("student2", generate_password_hash("pass789"), "student")
+]
+c.executemany("INSERT INTO users (username, password, role) VALUES (?, ?, ?)", users)
 
-# ✅ records テーブル（title と student_id を含む）
+# records テーブル
 c.execute("DROP TABLE IF EXISTS records")
 c.execute("""
     CREATE TABLE records (
@@ -51,4 +53,4 @@ c.execute("""
 conn.commit()
 conn.close()
 
-print("✅ データベース初期化完了（title対応済み）")
+print("✅ データベース初期化完了（ハッシュ化対応済み）")

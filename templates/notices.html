@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block title %}お知らせ一覧{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">📢 お知らせ一覧</h2>
+
+<ul class="list-group">
+  {% for notice in notices %}
+    <li class="list-group-item">
+      <h5>
+        <a href="{{ url_for('notice_detail', notice_id=notice[0]) }}" class="text-decoration-none">
+          {{ notice[1] }}
+        </a>
+      </h5>
+      <small class="text-muted">{{ notice[3][:16].replace("T", " ") }} 投稿 by {{ notice[4] }}</small><br>
+      <p class="mt-1 text-truncate">{{ notice[2] }}</p>
+    </li>
+  {% else %}
+    <li class="list-group-item text-muted">まだお知らせはありません。</li>
+  {% endfor %}
+</ul>
+{% endblock %}

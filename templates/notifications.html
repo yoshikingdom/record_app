@@ -1,0 +1,22 @@
+{% extends "layout.html" %} 
+{% block title %}通知一覧{% endblock %}
+{% block content %}
+<h2 class="mb-4">🔔 通知一覧</h2>
+
+<ul class="list-group">
+  {% for notif in notifications %}
+    <li class="list-group-item d-flex justify-content-between align-items-center 
+        {% if notif[6] == 0 %}list-group-item-warning{% endif %}">
+      <div>
+        📝 <strong>{{ notif[1] }}</strong> に 
+        <strong>{{ notif[4] }}</strong> さんがコメント（{{ notif[3][:16].replace("T", " ") }}）
+      </div>
+      <a href="{{ url_for('mark_notification_read', notif_id=notif[0]) }}" class="btn btn-sm btn-outline-primary">
+        {% if notif[6] == 0 %}🆕 見る{% else %}👁️ 見る{% endif %}
+      </a>
+    </li>
+  {% else %}
+    <li class="list-group-item text-muted">通知はありません</li>
+  {% endfor %}
+</ul>
+{% endblock %}
