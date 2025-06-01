@@ -52,6 +52,36 @@ class User(UserMixin):
         self.username = username
         self.role = role
 
+@app.route("/register", methods=["GET", "POST"])
+@login_required
+def register():
+    if current_user.role != "teacher":
+        return "このページは講師専用です", 403
+
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+        role = request.form["role"]
+        hashed_password = generate_password_hash(password)
+
+        conn = sqlite3.connect(DB_NAME)
+        c = conn.cursor()
+
+        # ユーザー名の重複チェック
+        c.execute("SELECT id FROM users WHERE username = ?", (username,))
+        if c.fetchone():
+            flash("❌ そのユーザー名は既に使用されています。", "danger")
+        else:
+            c.execute("INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
+                      (username, hashed_password, role))
+            conn.commit()
+            flash(f"✅ ユーザー「{username}」を{role}として登録しました！", "success")
+
+        conn.close()
+        return redirect(url_for("register"))
+
+    return render_template("register.html")
+
 @login_manager.user_loader
 def load_user(user_id):
     conn = sqlite3.connect(DB_NAME)

@@ -25,6 +25,7 @@
         {% if current_user.role == 'teacher' %}
           <a href="{{ url_for('add_record') }}" class="me-2">➕ 記録追加</a>
           <a href="{{ url_for('new_notice') }}" class="me-2">🆕 お知らせ投稿</a>
+            <a href="{{ url_for('register') }}" class="me-2">👤 新規ユーザー登録</a>
         {% endif %}
         <a href="{{ url_for('notices') }}" class="me-2">📢 お知らせ一覧</a>
         <a href="{{ url_for('notifications') }}" class="me-2">

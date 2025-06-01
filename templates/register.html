@@ -1,13 +1,12 @@
 {% extends "layout.html" %}
-
-{% block title %}ログイン{% endblock %}
+{% block title %}ユーザー登録{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
   <div class="col-md-6">
     <div class="card shadow-sm mt-5">
       <div class="card-body">
-        <h2 class="card-title mb-4 text-center">🔐 ログイン</h2>
+        <h2 class="card-title mb-4 text-center">👤 新規ユーザー登録（講師専用）</h2>
         <form method="POST">
           <div class="mb-3">
             <label class="form-label">ユーザー名</label>
@@ -17,17 +16,17 @@
             <label class="form-label">パスワード</label>
             <input type="password" name="password" class="form-control" required>
           </div>
+          <div class="mb-3">
+            <label class="form-label">役割</label>
+            <select name="role" class="form-select" required>
+              <option value="student">生徒</option>
+              <option value="teacher">講師</option>
+            </select>
+          </div>
           <div class="d-grid">
-            <button type="submit" class="btn btn-primary">ログイン</button>
+            <button type="submit" class="btn btn-success">登録する</button>
           </div>
         </form>
-
-        <!-- 🔒 生徒に見せたくない場合はこのリンクは削除する -->
-        <!-- <p class="mt-3 text-center">
-          アカウントをお持ちでない方は 👉 
-          <a href="{{ url_for('register') }}">新規登録</a>
-        </p> -->
-
       </div>
     </div>
   </div>
