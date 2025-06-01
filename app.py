@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+import os
+load_dotenv()  # .envファイルの読み込み
 from flask import flash
 from flask import make_response
 from flask import Flask, render_template, request, redirect, url_for
@@ -32,15 +35,16 @@ def init_users():
     """)
     c.execute("SELECT COUNT(*) FROM users")
     if c.fetchone()[0] == 0:
-            c.executemany("INSERT INTO users (username, password, role) VALUES (?, ?, ?)", [
-                ("teacher1", generate_password_hash("pass123"), "teacher"),
-                ("student1", generate_password_hash("pass456"), "student")
-            ])
-            print("⭐ ユーザー初期登録完了")
+        teacher_pass = os.getenv("TEACHER1_PASSWORD")
+        student_pass = os.getenv("STUDENT1_PASSWORD")
+
+        c.executemany("INSERT INTO users (username, password, role) VALUES (?, ?, ?)", [
+            ("teacher1", generate_password_hash(teacher_pass), "teacher"),
+            ("student1", generate_password_hash(student_pass), "student")
+        ])
+        print("⭐ ユーザー初期登録完了")
     conn.commit()
     conn.close()
-
-init_users()
 
 class User(UserMixin):
     def __init__(self, id, username, role):

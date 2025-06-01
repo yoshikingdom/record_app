@@ -1,0 +1,39 @@
+# Python バイトコード
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 環境構成
+.env
+.venv/
+venv/
+env/
+
+# OS / エディタ
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# SQLite データベース（開発中のみ必要な場合）
+*.db
+*.sqlite3
+
+# PyInstaller
+*.spec
+dist/
+build/
+
+# ログ・キャッシュ
+*.log
+*.pot
+*.pyc
+.cache/
+*.pyo
+
+# Renderなどで使う一時ファイル
+instance/
+.webassets-cache
+
+# その他
+*.bak
